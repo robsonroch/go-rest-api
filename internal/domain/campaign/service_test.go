@@ -5,7 +5,17 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
+
+type repositoryMock struct {
+	mock.Mock
+}
+
+func (r *repositoryMock) Save(campaign *Campaign) error {
+	args := r.Called(campaign)
+	return args.Error(0)
+}
 
 func Test_Create_Campaign(t *testing.T) {
 	assert := assert.New(t)
@@ -23,7 +33,9 @@ func Test_Create_Campaign(t *testing.T) {
 
 func Test_Create_SaveCampaign(t *testing.T) {
 	assert := assert.New(t)
-	service := Service{}
+	repositoryMock := new(repositoryMock)
+	repositoryMock.On("Save", mock.AnythingOfType("*campaign.Campaign")).Return(nil)
+	service := Service{Repository: repositoryMock}
 	newCampaign := contract.NewCampaign{
 		Name:    "Test Y",
 		Content: "Body",
